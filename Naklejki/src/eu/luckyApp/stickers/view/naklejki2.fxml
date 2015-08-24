@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="root" fx:id="" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="100.0" minWidth="150.0" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="eu.luckyApp.stickers.controllers.MainController">
+	<children>
+		<SplitPane dividerPositions="0.15719063545150502" focusTraversable="true" layoutX="177.0" layoutY="41.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+			<items>
+				<AnchorPane maxHeight="50.0" minHeight="50.0" minWidth="0.0" prefHeight="50.0" prefWidth="160.0">
+					<children>
+						<Pane id="top_pane" layoutX="50.0" layoutY="-54.0" prefHeight="104.0" prefWidth="798.0" styleClass="pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+					</children>
+				</AnchorPane>
+				<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+					<children>
+						<SplitPane dividerPositions="0.16834170854271358" focusTraversable="true" layoutX="83.0" layoutY="75.0" prefHeight="324.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns:fx="http://javafx.com/fxml">
+							<items>
+								<AnchorPane maxWidth="131.0" minHeight="0.0" minWidth="131.0" prefHeight="160.0" prefWidth="131.0">
+									<children>
+										<Button fx:id="" layoutX="13.0" layoutY="19.0" mnemonicParsing="false" onAction="#onFileLoad" prefHeight="25.0" prefWidth="104.0" text="Dodaj z pliku" />
+                              <Button layoutX="13.0" layoutY="104.0" mnemonicParsing="false" onAction="#onClearAllBtnClick" prefHeight="25.0" prefWidth="104.0" text="Kasuj wszystko" />
+                              <Button layoutX="14.0" layoutY="70.0" mnemonicParsing="false" onAction="#onDeleteRowBtnHandle" prefHeight="25.0" prefWidth="104.0" text="Usuń wiersze" />
+                              <Button layoutX="14.0" layoutY="281.0" mnemonicParsing="false" onAction="#onCreateStickerBtnHandler" prefHeight="91.0" prefWidth="104.0" text="Twórz naklejki" />
+									</children>
+								</AnchorPane>
+								<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+									<children>
+										<SplitPane dividerPositions="0.734375" focusTraversable="true" layoutX="158.0" layoutY="119.0" orientation="VERTICAL" prefHeight="322.0" prefWidth="495.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+											<items>
+												<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+													<children>
+														<TableView id="root" fx:id="materialsTable" editable="true" layoutX="77.0" layoutY="12.0" prefHeight="232.0" prefWidth="493.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" xmlns:fx="http://javafx.com/fxml">
+															<columns>
+                                                <TableColumn fx:id="lpColumn" prefWidth="40.0" text="LP" />
+																<TableColumn id="" fx:id="indexColumn" maxWidth="1000.0" prefWidth="185.0" text="Index" />
+																<TableColumn fx:id="nameColumn" prefWidth="200.0" text="Nazwa" />
+																<TableColumn fx:id="unitColumn" maxWidth="100.0" prefWidth="65.0" text="Jednostka" />
+																<TableColumn fx:id="storeColumn" prefWidth="75.0" text="Skład" />
+																<TableColumn fx:id="amountColumn" maxWidth="100.0" prefWidth="60.0" text="Ilość" />
+                                                <TableColumn fx:id="deleteColumn" prefWidth="75.0" />
+															</columns>
+														</TableView>
+														<Label alignment="CENTER" contentDisplay="CENTER" layoutX="254.0" layoutY="3.5" style="-: center;" text="Wczytane materiały" textAlignment="CENTER" textOverrun="CLIP" wrapText="true" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0" />
+													</children>
+												</AnchorPane>
+												<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+													<children>
+														<TextArea fx:id="logTextArea" layoutX="32.0" layoutY="-45.0" prefHeight="126.0" prefWidth="660.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0" />
+														<Label text="Wykonane" />
+													</children>
+												</AnchorPane>
+											</items>
+										</SplitPane>
+									</children>
+								</AnchorPane>
+							</items>
+						</SplitPane>
+					</children>
+				</AnchorPane>
+			</items>
+		</SplitPane>
+      <MenuBar prefHeight="25.0" prefWidth="171.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="Plik">
+            <items>
+                  <MenuItem mnemonicParsing="false" onAction="#onOpenFileHandler" text="Wczytaj zapamiętaną listę" />
+                  <MenuItem mnemonicParsing="false" onAction="#onSaveFileHandler" text="Zapamiętaj listę" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+              <MenuItem mnemonicParsing="false" onAction="#onExitBtnHandler" text="Zamknij" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edycja">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Usuń" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Pomoc">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#onOpenAboutProgramHandler" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+	</children>
+</AnchorPane>
