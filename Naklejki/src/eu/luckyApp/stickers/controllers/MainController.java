@@ -131,10 +131,11 @@ public class MainController implements Initializable {//
 			}
 
 			if (dao != null) {
-				materialsList.addAll(dao.parseData());
+			//	materialsList.addAll(dao.parseData());
+				//materialsList.ad
 				// observableMaterialList =
 				// FXCollections.observableArrayList(materialsList);
-				observableMaterialList.addAll(materialsList);
+				observableMaterialList.addAll(dao.parseData());
 				materialsTable.setItems(observableMaterialList);
 			}
 			fileChooser.setInitialDirectory(choosedFile.getParentFile());
@@ -146,8 +147,8 @@ public class MainController implements Initializable {//
 
 	@FXML
 	protected void onClearAllBtnClick(ActionEvent evt) {
-		this.observableMaterialList.removeAll(materialsList);
-		this.materialsList.removeAll(materialsList);
+		this.observableMaterialList.removeAll(this.observableMaterialList);
+		//this.materialsList.removeAll(materialsList);
 
 	}
 
@@ -195,7 +196,7 @@ public class MainController implements Initializable {//
 		indexColumn.setCellFactory(cellFactory);
 		
 		//update observable materials list when change index
-		indexColumn.setOnEditCommit(e->{
+	/*	indexColumn.setOnEditCommit(e->{
 				Material m = e.getRowValue();
 				m.setIndexId(e.getNewValue());
 				observableMaterialList.set(e.getTablePosition().getRow(), m);
@@ -233,7 +234,7 @@ public class MainController implements Initializable {//
 			m.setIndexAmount(e.getNewValue());
 			System.out.println("nowa wartosc "+e.getNewValue());
 			observableMaterialList.set(e.getTablePosition().getRow(), m);
-		});
+		});*/
 	}
 
 	// EditingCell - for editing capability in a TableCell
@@ -421,9 +422,10 @@ public class MainController implements Initializable {//
 		try {
 			FileInputStream fis = new FileInputStream("dataFile");
 			ObjectInputStream ois = new ObjectInputStream(fis);
-			this.materialsList = (List<Material>) ois.readObject();
+			this.observableMaterialList = FXCollections.observableList((List<Material>) ois.readObject());
+			//this.observableMaterialList.
 			// System.out.println(this.materialsList);
-			this.observableMaterialList.addAll(materialsList);
+			//this.observableMaterialList.addAll(materialsList);
 			materialsTable.setItems(observableMaterialList);
 			// list.
 
@@ -441,7 +443,8 @@ public class MainController implements Initializable {//
 		try {
 			FileOutputStream fis = new FileOutputStream("dataFile");
 			ObjectOutputStream oos = new ObjectOutputStream(fis);
-			oos.writeObject(materialsList);
+			List<Material> ml=new ArrayList<Material>(observableMaterialList);
+			oos.writeObject(ml);
 			oos.close();
 			fis.close();
 			Alert alert = new Alert(AlertType.INFORMATION);
