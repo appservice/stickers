@@ -1,0 +1,10 @@
+DELEGATES_PREFERENCE=delegateValidatorList
+USER_BUILD_PREFERENCE=enabledBuildValidatorListorg.eclipse.wst.wsi.ui.internal.WSIMessageValidator;
+USER_MANUAL_PREFERENCE=enabledManualValidatorListorg.eclipse.wst.wsi.ui.internal.WSIMessageValidator;
+USER_PREFERENCE=overrideGlobalPreferencestruedisableAllValidationfalseversion1.2.600.v201501211647
+eclipse.preferences.version=1
+override=true
+suspend=false
+vals/org.eclipse.a.wst.html.webresources.core.WebResourcesValidator/global=FF01
+vals/org.eclipse.a.wst.html.webresources.core.WebResourcesValidator/groups=0107include07111contentType136org.eclipse.wst.html.core.htmlsourceT07fileext04htmlF07fileext05xhtmlF07fileext03htmF07fileext04htplF07fileext03wmlF07fileext03cssF
+vf.version=3
