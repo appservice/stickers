@@ -10,22 +10,25 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
-import com.sun.javafx.image.impl.ByteIndexed.Getter;
-
+import eu.luckyApp.stickers.creators.StickerCreator;
 import eu.luckyApp.stickers.model.Material;
+import eu.luckyApp.stickers.model.MaterialPropertyWrapper;
 import eu.luckyApp.stickers.persers.Excel2003Parser;
 import eu.luckyApp.stickers.persers.Parser;
 import eu.luckyApp.stickers.persers.PdfParser;
 import eu.luckyApp.stickers.utils.StickerUtils;
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -37,12 +40,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -59,25 +62,25 @@ public class MainController implements Initializable {//
 	protected AnchorPane root;
 
 	@FXML
-	protected TableView<Material> materialsTable;
+	protected TableView<MaterialPropertyWrapper> materialsTable;
 
 	@FXML
-	protected TableColumn<Material, String> indexColumn;
+	protected TableColumn<MaterialPropertyWrapper, String> indexColumn;
 
 	@FXML
-	protected TableColumn<Material, String> nameColumn;
+	protected TableColumn<MaterialPropertyWrapper, String> nameColumn;
 
 	@FXML
-	protected TableColumn<Material, String> unitColumn;
+	protected TableColumn<MaterialPropertyWrapper, String> unitColumn;
 
 	@FXML
-	protected TableColumn<Material, Double> amountColumn;
+	protected TableColumn<MaterialPropertyWrapper, Double> amountColumn;
 
 	@FXML
-	protected TableColumn<Material, String> storeColumn;
+	protected TableColumn<MaterialPropertyWrapper, String> storeColumn;
 
 	@FXML
-	protected TableColumn<Material, Number> lpColumn;
+	protected TableColumn<MaterialPropertyWrapper, Number> lpColumn;
 
 	@FXML
 	protected TableColumn<Material, Boolean> deleteColumn;
@@ -86,10 +89,17 @@ public class MainController implements Initializable {//
 	protected TextArea logTextArea;
 
 	private FileChooser fileChooser;
+	
+	
+	private IntegerProperty stickerAmount=new SimpleIntegerProperty();
+
+	private boolean isCreatingSticker;
 	// private ResourceBundle bundle;
 
-	private List<Material> materialsList = new ArrayList<>();
-	private ObservableList<Material> observableMaterialList = FXCollections.observableArrayList();
+	private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+	// private List<Material> materialsList = new ArrayList<>();
+	private ObservableList<MaterialPropertyWrapper> observableMaterialList = FXCollections.observableArrayList();
 	Preferences userPrefs = Preferences.userNodeForPackage(getClass());
 
 	@FXML
@@ -97,10 +107,8 @@ public class MainController implements Initializable {//
 		// create fileChooser
 		fileChooser = new FileChooser();
 
-		
-		//File initialPath=new File()
-		String path= Paths.get(".").toAbsolutePath().normalize().toString();
-
+		// File initialPath=new File()
+		String path = Paths.get(".").toAbsolutePath().normalize().toString();
 
 		fileChooser.setInitialDirectory(new File(userPrefs.get("file.location", path)));
 		// Set extension filter
@@ -131,11 +139,8 @@ public class MainController implements Initializable {//
 			}
 
 			if (dao != null) {
-			//	materialsList.addAll(dao.parseData());
-				//materialsList.ad
-				// observableMaterialList =
-				// FXCollections.observableArrayList(materialsList);
-				observableMaterialList.addAll(dao.parseData());
+
+				this.observableMaterialList = listToObservableListExtractor(dao.parseData());
 				materialsTable.setItems(observableMaterialList);
 			}
 			fileChooser.setInitialDirectory(choosedFile.getParentFile());
@@ -148,7 +153,7 @@ public class MainController implements Initializable {//
 	@FXML
 	protected void onClearAllBtnClick(ActionEvent evt) {
 		this.observableMaterialList.removeAll(this.observableMaterialList);
-		//this.materialsList.removeAll(materialsList);
+		// this.materialsList.removeAll(materialsList);
 
 	}
 
@@ -158,87 +163,98 @@ public class MainController implements Initializable {//
 		materialsTable.setPlaceholder(new Label("Wczytaj dane"));
 		materialsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-		indexColumn.setCellValueFactory(new PropertyValueFactory<Material, String>("indexId"));
-		nameColumn.setCellValueFactory(new PropertyValueFactory<Material, String>("indexName"));
-		unitColumn.setCellValueFactory(new PropertyValueFactory<Material, String>("indexUnit"));
-		amountColumn.setCellValueFactory(new PropertyValueFactory<Material, Double>("indexAmount"));
-		storeColumn.setCellValueFactory(new PropertyValueFactory<Material, String>("indexStore"));
+		// enable multi-selection
+		materialsTable.getSelectionModel().setCellSelectionEnabled(true);
+		materialsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		// enable copy/paste
+		// TableUtils.installCopyPasteHandler(materialsTable);
+		eu.luckyApp.stickers.utils.TableUtils.installCopyPasteHandler(materialsTable);
+
+
+
+		indexColumn.setCellValueFactory(cellData -> cellData.getValue().indexIdProperty());
+		nameColumn.setCellValueFactory(cellData -> cellData.getValue().indexNameProperty());
+		unitColumn.setCellValueFactory(cellData -> cellData.getValue().indexUnitProperty());
+		amountColumn.setCellValueFactory(new PropertyValueFactory<MaterialPropertyWrapper, Double>("indexAmount"));
+		storeColumn.setCellValueFactory(cellData -> cellData.getValue().indexStoreProperty());
 		// TableColumn<Material, Number> lpColumn = new TableColumn<Material,
 		// Number>("#");
 		lpColumn.setSortable(false);
 		lpColumn.setCellValueFactory(
 				column -> new ReadOnlyObjectWrapper<Number>(materialsTable.getItems().indexOf(column.getValue()) + 1));
-	/*	deleteColumn.setSortable(false);
-
-		deleteColumn.setCellValueFactory(
-				new Callback<TableColumn.CellDataFeatures<Material, Boolean>, ObservableValue<Boolean>>() {
-
-					@Override
-					public ObservableValue<Boolean> call(TableColumn.CellDataFeatures<Material, Boolean> p) {
-						return new SimpleBooleanProperty(p.getValue() != null);
-					}
-				});
-
-		deleteColumn.setCellFactory(new Callback<TableColumn<Material, Boolean>, TableCell<Material, Boolean>>() {
-
-			@Override
-			public TableCell<Material, Boolean> call(TableColumn<Material, Boolean> p) {
-				return new ButtonCell();
-			}
-
-		});*/
+		
 
 		// Set cell factory for cells that allow editing
-		Callback<TableColumn<Material, String>, TableCell<Material, String>> cellFactory = p -> new EditingCell();
+		Callback<TableColumn<MaterialPropertyWrapper, String>, TableCell<MaterialPropertyWrapper, String>> cellFactory = p -> new EditingCell();
 
-		Callback<TableColumn<Material, Double>, TableCell<Material, Double>> cellFactoryDouble = p -> new EditingCellDouble();
+		Callback<TableColumn<MaterialPropertyWrapper, Double>, TableCell<MaterialPropertyWrapper, Double>> cellFactoryDouble = p -> new EditingCellDouble();
 
 		indexColumn.setCellFactory(cellFactory);
-		
-		//update observable materials list when change index
-	/*	indexColumn.setOnEditCommit(e->{
-				Material m = e.getRowValue();
-				m.setIndexId(e.getNewValue());
-				observableMaterialList.set(e.getTablePosition().getRow(), m);
-		
+		nameColumn.setCellFactory(cellFactory);
+		unitColumn.setCellFactory(cellFactory);
+		storeColumn.setCellFactory(cellFactory);
+		amountColumn.setCellFactory(cellFactoryDouble);
+
+		// update observable materials list when change index
+		indexColumn.setOnEditCommit(e -> {
+			MaterialPropertyWrapper m = e.getRowValue();
+			m.indexIdProperty().set(e.getNewValue());
+			System.out.println("zmieniono " + m.getIndexId());
+
+			observableMaterialList.set(e.getTablePosition().getRow(), m);
+
 		});
 
-		//update observable materials list when change name
-		nameColumn.setCellFactory(cellFactory);
+		// update observable materials list when change name
+
 		nameColumn.setOnEditCommit(e -> {
-			Material m = e.getRowValue();
+			MaterialPropertyWrapper m = e.getRowValue();
 			m.setIndexName(e.getNewValue());
 			observableMaterialList.set(e.getTablePosition().getRow(), m);
 		});
-
-		//update observable materials list when change unit
-		unitColumn.setCellFactory(cellFactory);
-		unitColumn.setOnEditCommit(e -> {
-			Material m = e.getRowValue();
-			m.setIndexUnit(e.getNewValue());
-			observableMaterialList.set(e.getTablePosition().getRow(), m);
-		});
-
-		//update observable materials list when change store
-		storeColumn.setCellFactory(cellFactory);
-		storeColumn.setOnEditCommit(e -> {
-			Material m = e.getRowValue();
-			m.setIndexStore(e.getNewValue());
-			observableMaterialList.set(e.getTablePosition().getRow(), m);
-		});
 		
-		//update observable materials list when change amount
-		amountColumn.setCellFactory(cellFactoryDouble);
-		amountColumn.setOnEditCommit(e -> {
-			Material m = e.getRowValue();			
-			m.setIndexAmount(e.getNewValue());
-			System.out.println("nowa wartosc "+e.getNewValue());
-			observableMaterialList.set(e.getTablePosition().getRow(), m);
-		});*/
-	}
+		
+	/*	observableMaterialList.addListener(new ListChangeListener<MaterialPropertyWrapper>() {
 
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends MaterialPropertyWrapper> c) {
+				
+				
+				System.out.println("coœ sie zmieni³o "+c.);
+				stickerAmount.add(c.getList().size());
+			}
+		});*/
+		//amountColumn.
+		
+		
+		/*
+			 * 
+			 * // update observable materials list when change unit
+			 * unitColumn.setCellFactory(cellFactory);
+			 * unitColumn.setOnEditCommit(e -> { Material m = e.getRowValue();
+			 * m.setIndexUnit(e.getNewValue());
+			 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
+			 * 
+			 * // update observable materials list when change store
+			 * storeColumn.setCellFactory(cellFactory);
+			 * storeColumn.setOnEditCommit(e -> { Material m = e.getRowValue();
+			 * m.setIndexStore(e.getNewValue());
+			 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
+			 * 
+			 * // update observable materials list when change amount
+			 * amountColumn.setCellFactory(cellFactoryDouble);
+			 * amountColumn.setOnEditCommit(e -> { Material m = e.getRowValue();
+			 * m.setIndexAmount(e.getNewValue()); System.out.println(
+			 * "nowa wartosc " + e.getNewValue());
+			 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
+			 */
+		
+		
+		
+	}
+   
 	// EditingCell - for editing capability in a TableCell
-	public static class EditingCell extends TableCell<Material, String> {
+	public static class EditingCell extends TableCell<MaterialPropertyWrapper, String> {
 		private TextField textField;
 
 		public EditingCell() {
@@ -308,7 +324,7 @@ public class MainController implements Initializable {//
 		}
 	}
 
-	class EditingCellDouble extends TableCell<Material, Double> {
+	class EditingCellDouble extends TableCell<MaterialPropertyWrapper, Double> {
 
 		private TextField textField;
 
@@ -422,12 +438,8 @@ public class MainController implements Initializable {//
 		try {
 			FileInputStream fis = new FileInputStream("dataFile");
 			ObjectInputStream ois = new ObjectInputStream(fis);
-			this.observableMaterialList = FXCollections.observableList((List<Material>) ois.readObject());
-			//this.observableMaterialList.
-			// System.out.println(this.materialsList);
-			//this.observableMaterialList.addAll(materialsList);
+			this.observableMaterialList = listToObservableListExtractor((List<Material>) ois.readObject());
 			materialsTable.setItems(observableMaterialList);
-			// list.
 
 			ois.close();
 			fis.close();
@@ -441,26 +453,23 @@ public class MainController implements Initializable {//
 	@FXML
 	protected void onSaveFileHandler(ActionEvent evt) {
 		try {
-			FileOutputStream fis = new FileOutputStream("dataFile");
-			ObjectOutputStream oos = new ObjectOutputStream(fis);
-			List<Material> ml=new ArrayList<Material>(observableMaterialList);
-			oos.writeObject(ml);
-			oos.close();
-			fis.close();
-			Alert alert = new Alert(AlertType.INFORMATION);
+
+			Alert alert = new Alert(AlertType.CONFIRMATION);
 			alert.setHeaderText(null);
 			alert.setTitle("Zapis do pliku");
-			alert.setContentText("Tablea zapisana do pliku!");
-			alert.show();
+			alert.setContentText("Czy zapisaæ tabelê do pamiêci?");
+			Optional<ButtonType> result = alert.showAndWait();
 
-			/*
-			 * Dialogs.create() //.owner(stage) .title("Information Dialog")
-			 * .masthead(null) .message("I have a great message for you!")
-			 * .showInformation();
-			 */
+			if (result.isPresent() && result.get() == ButtonType.OK) {
+				FileOutputStream fis = new FileOutputStream("dataFile");
+				ObjectOutputStream oos = new ObjectOutputStream(fis);
 
-			// Dialogs.create().title("Zapis do pliku").showInformation();
-			// Dialog d=new Dialog();
+				List<Material> ml = observableListToListExtractor(observableMaterialList);
+				oos.writeObject(ml);
+				oos.close();
+				fis.close();
+			}
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -496,17 +505,75 @@ public class MainController implements Initializable {//
 
 	@FXML
 	protected void onCreateStickerBtnHandler(ActionEvent evt) {
-		//System.out.println("twórz naklejki");
+		Button sourceButton = (Button) evt.getSource();
+		// List myList=observableMaterialList;
+		List<Material> myArrayList = observableListToListExtractor(this.observableMaterialList);
 
-		//System.out.println(observableMaterialList);
-		StickerCreator stickerCreator = new StickerCreator(observableMaterialList);
-		stickerCreator.setLogTextArea(logTextArea);
-		Thread t=new Thread(stickerCreator);
-		//t.setDaemon(true);
-		t.start();
-		//Platform.runLater(stickerCreator);
-		//ExecutorService.submit(stickerCreator);
-	//	Platform.runLater(stickerCreator);
+		// System.out.println(myList);
+		StickerCreator stickerCreator = new StickerCreator(myArrayList, logTextArea);
+		// Thread t=new Thread(stickerCreator);
+		// t.start();
+		stickerCreator.setOnSucceeded(e -> {
+			sourceButton.setText("Twórz naklejki");
+			isCreatingSticker = false;
+		});
+
+		if (!isCreatingSticker) {
+
+			executorService.execute(stickerCreator);
+			isCreatingSticker = true;
+			sourceButton.setText("Przerwij");
+		} else {
+			executorService.shutdownNow();
+			isCreatingSticker = false;
+			sourceButton.setText("Twórz naklejki");
+			this.executorService = Executors.newSingleThreadExecutor();
+		}
+
 	}
 
+	/**
+	 * @return
+	 */
+	private List<Material> observableListToListExtractor(ObservableList<MaterialPropertyWrapper> ol) {
+		List<Material> myArrayList = new ArrayList<>();
+		for (MaterialPropertyWrapper mpw : ol) {
+			myArrayList.add(mpw.getMaterial());
+
+		}
+		return myArrayList;
+	}
+
+	private ObservableList<MaterialPropertyWrapper> listToObservableListExtractor(List<Material> ml) {
+
+		ObservableList<MaterialPropertyWrapper> ol = this.observableMaterialList;// FXCollections.observableArrayList();
+		for (Material m : ml) {
+			ol.add(new MaterialPropertyWrapper(m));
+			//stickerAmount.set(stickerAmount.get()+m.getIndexAmount().intValue());
+
+		}
+		System.out.println(stickerAmount.get());
+		return ol;
+	}
+
+	@FXML
+	protected void onSettingsBtnHandler(ActionEvent evt) {
+		Parent root;
+
+		try {
+			root = FXMLLoader.load(getClass().getResource("Settings.fxml"));
+			// root=new AnchorPane();
+
+			Stage stage = new Stage();
+			stage.setTitle("Ustawienia");
+			stage.setScene(new Scene(root));
+			stage.show();
+
+			// hide this current window (if this is whant you want
+			// ((Node)(event.getSource())).getScene().getWindow().hide();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

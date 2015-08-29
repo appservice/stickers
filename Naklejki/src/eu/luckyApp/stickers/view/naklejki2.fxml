@@ -1,33 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="root" fx:id="" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="100.0" minWidth="150.0" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="eu.luckyApp.stickers.controllers.MainController">
+<AnchorPane id="root" fx:id="" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="100.0" minWidth="150.0" prefHeight="600.0" prefWidth="800.0" stylesheets="@application.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="eu.luckyApp.stickers.controllers.MainController">
 	<children>
 		<SplitPane dividerPositions="0.15719063545150502" focusTraversable="true" layoutX="177.0" layoutY="41.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 			<items>
-				<AnchorPane maxHeight="50.0" minHeight="50.0" minWidth="0.0" prefHeight="50.0" prefWidth="160.0">
+				<AnchorPane maxHeight="70.0" minHeight="70.0" minWidth="0.0" prefHeight="70.0" prefWidth="160.0">
 					<children>
-						<Pane id="top_pane" layoutX="50.0" layoutY="-54.0" prefHeight="104.0" prefWidth="798.0" styleClass="pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <FlowPane alignment="BOTTOM_RIGHT" prefHeight="50.0" prefWidth="798.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <Button alignment="CENTER" mnemonicParsing="false" onAction="#onOpenFileHandler" prefHeight="40.0" prefWidth="168.0" text="Wczytaj z pamięci" textAlignment="CENTER">
+                           <FlowPane.margin>
+                              <Insets bottom="2.0" right="10.0" />
+                           </FlowPane.margin>
+                        </Button>
+                        <Button alignment="CENTER" mnemonicParsing="false" onAction="#onSaveFileHandler" prefHeight="40.0" prefWidth="160.0" text="Zapisz do pamięci" textAlignment="CENTER">
+                           <FlowPane.margin>
+                              <Insets bottom="2.0" right="2.0" />
+                           </FlowPane.margin>
+                        </Button>
+                     </children>
+                  </FlowPane>
 					</children>
 				</AnchorPane>
 				<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
 					<children>
 						<SplitPane dividerPositions="0.16834170854271358" focusTraversable="true" layoutX="83.0" layoutY="75.0" prefHeight="324.0" prefWidth="598.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns:fx="http://javafx.com/fxml">
 							<items>
-								<AnchorPane maxWidth="131.0" minHeight="0.0" minWidth="131.0" prefHeight="160.0" prefWidth="131.0">
+								<AnchorPane maxWidth="150.0" minHeight="10.0" minWidth="150.0" prefHeight="160.0" prefWidth="150.0">
 									<children>
-										<Button fx:id="" layoutX="13.0" layoutY="19.0" mnemonicParsing="false" onAction="#onFileLoad" prefHeight="25.0" prefWidth="104.0" text="Dodaj z pliku" />
-                              <Button layoutX="13.0" layoutY="104.0" mnemonicParsing="false" onAction="#onClearAllBtnClick" prefHeight="25.0" prefWidth="104.0" text="Kasuj wszystko" />
-                              <Button layoutX="14.0" layoutY="70.0" mnemonicParsing="false" onAction="#onDeleteRowBtnHandle" prefHeight="25.0" prefWidth="104.0" text="Usuń wiersze" />
-                              <Button layoutX="14.0" layoutY="281.0" mnemonicParsing="false" onAction="#onCreateStickerBtnHandler" prefHeight="91.0" prefWidth="104.0" text="Twórz naklejki" />
+										<Button fx:id="" layoutX="5.0" layoutY="14.0" mnemonicParsing="false" onAction="#onFileLoad" prefHeight="41.0" prefWidth="141.0" text="Dodaj z pliku" />
+                              <Button layoutX="4.0" layoutY="125.0" mnemonicParsing="false" onAction="#onClearAllBtnClick" prefHeight="41.0" prefWidth="141.0" text="Kasuj wszystko" />
+                              <Button layoutX="5.0" layoutY="70.0" mnemonicParsing="false" onAction="#onDeleteRowBtnHandle" prefHeight="41.0" prefWidth="141.0" text="Usuń wiersze" />
+                              <Button layoutX="5.0" layoutY="278.0" mnemonicParsing="false" onAction="#onCreateStickerBtnHandler" prefHeight="91.0" prefWidth="141.0" text="Twórz naklejki" />
 									</children>
 								</AnchorPane>
 								<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
 									<children>
-										<SplitPane dividerPositions="0.734375" focusTraversable="true" layoutX="158.0" layoutY="119.0" orientation="VERTICAL" prefHeight="322.0" prefWidth="495.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+										<SplitPane dividerPositions="0.734375" focusTraversable="true" layoutX="19.0" layoutY="119.0" orientation="VERTICAL" prefHeight="530.0" prefWidth="640.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 											<items>
 												<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
 													<children>
@@ -67,6 +81,7 @@
             <items>
                   <MenuItem mnemonicParsing="false" onAction="#onOpenFileHandler" text="Wczytaj zapamiętaną listę" />
                   <MenuItem mnemonicParsing="false" onAction="#onSaveFileHandler" text="Zapamiętaj listę" />
+                  <MenuItem mnemonicParsing="false" onAction="#onSettingsBtnHandler" text="Ustawienia" />
                   <SeparatorMenuItem mnemonicParsing="false" />
               <MenuItem mnemonicParsing="false" onAction="#onExitBtnHandler" text="Zamknij" />
             </items>

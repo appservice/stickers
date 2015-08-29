@@ -222,6 +222,7 @@ public class Material implements Serializable {
                     }
                 }
             }
+          
             return image;
         } catch (WriterException ex) {
             Logger.getLogger(Material.class.getName()).log(Level.SEVERE, null, ex);
@@ -230,8 +231,12 @@ public class Material implements Serializable {
     }
 
     @Override
+    public String toString(){
+    	return indexId+" "+indexName+" "+indexStore+" "+indexAmount+" "+indexUnit+"\n";
+    }
+   /* @Override
     public String toString() {
         return "Index{" + "indexId=" + indexId + ", indexName=" + indexName + ", indexUnit=" + indexUnit + ", indexStore=" + indexStore + ", indexAmount=" + indexAmount + ", additionalDescibe=" + additionalDescribe + "}\n";
-    }
+    }*/
 
 }
