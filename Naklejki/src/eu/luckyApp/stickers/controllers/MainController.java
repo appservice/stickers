@@ -1,5 +1,6 @@
 package eu.luckyApp.stickers.controllers;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +36,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -53,13 +55,15 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
 public class MainController implements Initializable {//
+
 	@FXML
-	protected AnchorPane root;
+	protected Node myRoot;
 
 	@FXML
 	protected TableView<MaterialPropertyWrapper> materialsTable;
@@ -89,9 +93,17 @@ public class MainController implements Initializable {//
 	protected TextArea logTextArea;
 
 	private FileChooser fileChooser;
-	
-	
-	private IntegerProperty stickerAmount=new SimpleIntegerProperty();
+
+	// private Stage mainStage;
+
+	private IntegerProperty stickerAmount = new SimpleIntegerProperty();
+
+	/**
+	 * @return the executorService
+	 */
+	public ExecutorService getExecutorService() {
+		return executorService;
+	}
 
 	private boolean isCreatingSticker;
 	// private ResourceBundle bundle;
@@ -119,33 +131,42 @@ public class MainController implements Initializable {//
 		fileChooser.getExtensionFilters().add(extFilter2);
 
 		// load File and create observableList from it
-		File choosedFile = fileChooser.showOpenDialog(null);
-		if (choosedFile != null && choosedFile.canRead()) {
 
-			Parser dao = null;
-			switch (StickerUtils.getExtension(choosedFile)) {
-			case "xls":
+		List<File> fileList = fileChooser.showOpenMultipleDialog(null);
+		// File choosedFile = fileChooser.showOpenDialog(null);
 
-				dao = new Excel2003Parser(choosedFile);
-				break;
-			case "xlsx":
-				break;
-			case "pdf":
-				dao = new PdfParser(choosedFile);
-				break;
-			default:
-				break;
+		for (File choosedFile : fileList) {
+			if (choosedFile != null && choosedFile.canRead()) {
 
+				Parser dao = null;
+				switch (StickerUtils.getExtension(choosedFile)) {
+				case "xls":
+
+					dao = new Excel2003Parser(choosedFile);
+					break;
+				case "xlsx":
+					break;
+				case "pdf":
+					dao = new PdfParser(choosedFile);
+					break;
+				default:
+					break;
+
+				}
+
+				if (dao != null) {
+
+					this.observableMaterialList = listToObservableListExtractor(dao.parseData());
+					materialsTable.setItems(observableMaterialList);
+				}
 			}
 
-			if (dao != null) {
-
-				this.observableMaterialList = listToObservableListExtractor(dao.parseData());
-				materialsTable.setItems(observableMaterialList);
-			}
-			fileChooser.setInitialDirectory(choosedFile.getParentFile());
-			userPrefs.put("file.location", choosedFile.getParent());
 		}
+
+		File initialPath = (fileList.get(fileList.size() - 1)).getParentFile();
+		// System.out.println(initialPath);
+		fileChooser.setInitialDirectory(initialPath);
+		userPrefs.put("file.location", initialPath.getAbsolutePath());
 		materialsTable.autosize();
 
 	}
@@ -170,8 +191,6 @@ public class MainController implements Initializable {//
 		// TableUtils.installCopyPasteHandler(materialsTable);
 		eu.luckyApp.stickers.utils.TableUtils.installCopyPasteHandler(materialsTable);
 
-
-
 		indexColumn.setCellValueFactory(cellData -> cellData.getValue().indexIdProperty());
 		nameColumn.setCellValueFactory(cellData -> cellData.getValue().indexNameProperty());
 		unitColumn.setCellValueFactory(cellData -> cellData.getValue().indexUnitProperty());
@@ -182,7 +201,6 @@ public class MainController implements Initializable {//
 		lpColumn.setSortable(false);
 		lpColumn.setCellValueFactory(
 				column -> new ReadOnlyObjectWrapper<Number>(materialsTable.getItems().indexOf(column.getValue()) + 1));
-		
 
 		// Set cell factory for cells that allow editing
 		Callback<TableColumn<MaterialPropertyWrapper, String>, TableCell<MaterialPropertyWrapper, String>> cellFactory = p -> new EditingCell();
@@ -212,47 +230,50 @@ public class MainController implements Initializable {//
 			m.setIndexName(e.getNewValue());
 			observableMaterialList.set(e.getTablePosition().getRow(), m);
 		});
-		
-		
-	/*	observableMaterialList.addListener(new ListChangeListener<MaterialPropertyWrapper>() {
 
-			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends MaterialPropertyWrapper> c) {
-				
-				
-				System.out.println("coœ sie zmieni³o "+c.);
-				stickerAmount.add(c.getList().size());
-			}
-		});*/
-		//amountColumn.
-		
-		
+		// System.out.println(getMainStage());
 		/*
-			 * 
-			 * // update observable materials list when change unit
-			 * unitColumn.setCellFactory(cellFactory);
-			 * unitColumn.setOnEditCommit(e -> { Material m = e.getRowValue();
-			 * m.setIndexUnit(e.getNewValue());
-			 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
-			 * 
-			 * // update observable materials list when change store
-			 * storeColumn.setCellFactory(cellFactory);
-			 * storeColumn.setOnEditCommit(e -> { Material m = e.getRowValue();
-			 * m.setIndexStore(e.getNewValue());
-			 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
-			 * 
-			 * // update observable materials list when change amount
-			 * amountColumn.setCellFactory(cellFactoryDouble);
-			 * amountColumn.setOnEditCommit(e -> { Material m = e.getRowValue();
-			 * m.setIndexAmount(e.getNewValue()); System.out.println(
-			 * "nowa wartosc " + e.getNewValue());
-			 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
-			 */
-		
-		
-		
+		 * observableMaterialList.addListener(new
+		 * ListChangeListener<MaterialPropertyWrapper>() {
+		 * 
+		 * @Override public void
+		 * onChanged(javafx.collections.ListChangeListener.Change<? extends
+		 * MaterialPropertyWrapper> c) {
+		 * 
+		 * 
+		 * System.out.println("coœ sie zmieni³o "+c.);
+		 * stickerAmount.add(c.getList().size()); } });
+		 */
+		// amountColumn.
+
+		/*
+		 * 
+		 * // update observable materials list when change unit
+		 * unitColumn.setCellFactory(cellFactory); unitColumn.setOnEditCommit(e
+		 * -> { Material m = e.getRowValue(); m.setIndexUnit(e.getNewValue());
+		 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
+		 * 
+		 * // update observable materials list when change store
+		 * storeColumn.setCellFactory(cellFactory);
+		 * storeColumn.setOnEditCommit(e -> { Material m = e.getRowValue();
+		 * m.setIndexStore(e.getNewValue());
+		 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
+		 * 
+		 * // update observable materials list when change amount
+		 * amountColumn.setCellFactory(cellFactoryDouble);
+		 * amountColumn.setOnEditCommit(e -> { Material m = e.getRowValue();
+		 * m.setIndexAmount(e.getNewValue()); System.out.println(
+		 * "nowa wartosc " + e.getNewValue());
+		 * observableMaterialList.set(e.getTablePosition().getRow(), m); });
+		 */
+
+		// System.out.println(.getScene());
+		// myRoot.getScene().getWindow().setOnCloseRequest(e->{
+
+		// executorService.shutdown();
+		// });
 	}
-   
+
 	// EditingCell - for editing capability in a TableCell
 	public static class EditingCell extends TableCell<MaterialPropertyWrapper, String> {
 		private TextField textField;
@@ -549,7 +570,7 @@ public class MainController implements Initializable {//
 		ObservableList<MaterialPropertyWrapper> ol = this.observableMaterialList;// FXCollections.observableArrayList();
 		for (Material m : ml) {
 			ol.add(new MaterialPropertyWrapper(m));
-			//stickerAmount.set(stickerAmount.get()+m.getIndexAmount().intValue());
+			// stickerAmount.set(stickerAmount.get()+m.getIndexAmount().intValue());
 
 		}
 		System.out.println(stickerAmount.get());
@@ -576,4 +597,23 @@ public class MainController implements Initializable {//
 			e.printStackTrace();
 		}
 	}
+
+	@FXML
+	protected void onOpenFileBtnHandler(ActionEvent evt) {
+		if (Desktop.isDesktopSupported()) {
+			Desktop desktop = Desktop.getDesktop();
+			
+			File file=new File(userPrefs.get("file.location", null)+File.separator+"naklejka 1.png");
+
+			try {
+				if(file.exists())
+				desktop.open(file);
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+	}
+
 }
